@@ -1,0 +1,64 @@
+# ASSIGNMENT - 1
+# Step 1: Load the dataset
+import pandas as pd
+
+df = pd.read_csv('https://raw.githubusercontent.com/selva86/datasets/master/BostonHousing.csv')
+print(df.head())
+
+# Step 2: Preprocess the data
+from sklearn.preprocessing import StandardScaler
+
+X = df.drop('medv', axis=1)
+y = df['medv']
+
+# Step 3: Split the dataset
+from sklearn.model_selection import train_test_split
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.3, random_state=42
+)
+
+# Step 4: Feature scaling (FIXED)
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Step 5: Define the model
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+
+model = Sequential()
+model.add(Dense(64, input_shape=(13,), activation='relu'))
+model.add(Dropout(0.2))
+model.add(Dense(32, activation='relu'))
+model.add(Dense(1, activation='linear'))
+
+model.summary()
+
+# Step 6: Compile the model
+model.compile(
+    loss='mean_squared_error',
+    optimizer='adam',
+    metrics=['mean_absolute_error']
+)
+
+# Step 7: Train the model
+from keras.callbacks import EarlyStopping
+
+early_stopping = EarlyStopping(monitor='val_loss', patience=5)
+
+history = model.fit(
+    X_train, y_train,
+    validation_split=0.2,
+    epochs=100,
+    batch_size=32,
+    callbacks=[early_stopping]
+)
+
+
+# Step 8: Evaluate the model
+loss, mae = model.evaluate(X_test, y_test)
+
+print("Mean Absolute Error:", mae)
+
+
