@@ -1,0 +1,96 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <omp.h>
+
+using namespace std;
+
+vector<int> graph[10];
+bool visited[10];
+
+// BFS Function
+void BFS(int start)
+{
+    queue<int> q;
+
+    visited[start] = true;
+    q.push(start);
+
+    cout << "\nBFS Traversal: ";
+
+    while(!q.empty())
+    {
+        int node = q.front();
+        q.pop();
+
+        cout << node << " ";
+
+        #pragma omp parallel for
+        for(int i = 0; i < graph[node].size(); i++)
+        {
+            int next = graph[node][i];
+
+            if(!visited[next])
+            {
+                visited[next] = true;
+
+                #pragma omp critical
+                q.push(next);
+            }
+        }
+    }
+}
+
+// DFS Function
+void DFS(int node)
+{
+    visited[node] = true;
+
+    cout << node << " ";
+
+    #pragma omp parallel for
+    for(int i = 0; i < graph[node].size(); i++)
+    {
+        int next = graph[node][i];
+
+        if(!visited[next])
+        {
+            DFS(next);
+        }
+    }
+}
+
+int main()
+{
+    int v, e;
+
+    cout << "Enter vertices and edges: ";
+    cin >> v >> e;
+
+    cout << "Enter edges:\n";
+
+    for(int i = 0; i < e; i++)
+    {
+        int a, b;
+        cin >> a >> b;
+
+        graph[a].push_back(b);
+        graph[b].push_back(a);
+    }
+
+    // BFS
+    for(int i = 0; i < v; i++)
+        visited[i] = false;
+
+    BFS(0);
+
+    // DFS
+    for(int i = 0; i < v; i++)
+        visited[i] = false;
+
+    cout << "\nDFS Traversal: ";
+
+    DFS(0);
+
+    return 0;
+}
